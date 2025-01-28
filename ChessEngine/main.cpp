@@ -123,13 +123,16 @@ public:
         }
     }
 
-    void DisplayBoard()
+    void DisplayBoard(int newBoard[SQUARES_NUM], int ignore)
     {
+
+        if (ignore) newBoard = board;
+
         int num = 8;
         int x = 0;
         for (int i = 0; i < SQUARES_NUM; i++)
         {
-            int square = board[SQUARES_NUM - num + x];
+            int square = newBoard[SQUARES_NUM - num + x];
             str space = square >= 10 ? "  " : "   ";
             x++;
 
@@ -144,11 +147,11 @@ public:
         cout << "\n\n\n";
     }
 
-    void GetRookMoves(vector<int> &moves, int pos)
+    void GetRookMoves(vector<int> &moves, int pos, int newBoard[SQUARES_NUM])
     {
         const int file = GetFileFromPos(pos);
         const int rank = GetRankFromPos(pos);
-        const int piece = board[rank * 8 + file];
+        const int piece = newBoard[rank * 8 + file];
 
         if (piece == 0)
             return;
@@ -165,7 +168,7 @@ public:
 
             while (newFile >= 0 && newFile < 8 && newRank >= 0 && newRank < 8)
             {
-                int square = board[newRank * 8 + newFile];
+                int square = newBoard[newRank * 8 + newFile];
 
                 if (square)
                 {
@@ -183,12 +186,12 @@ public:
         }
     }
 
-    void GetBishopMoves(vector<int> &moves, int pos)
+    void GetBishopMoves(vector<int> &moves, int pos, int newBoard[SQUARES_NUM])
     {
 
         const int file = GetFileFromPos(pos);
         const int rank = GetRankFromPos(pos);
-        const int piece = board[rank * 8 + file];
+        const int piece = newBoard[rank * 8 + file];
 
         if (piece == 0)
             return;
@@ -205,7 +208,7 @@ public:
 
             while (newFile >= 0 && newFile < 8 && newRank >= 0 && newRank < 8)
             {
-                int square = board[newRank * 8 + newFile];
+                int square = newBoard[newRank * 8 + newFile];
 
                 if (square)
                 {
@@ -223,17 +226,17 @@ public:
         }
     }
 
-    void GetQueenMoves(vector<int> &moves, int pos)
+    void GetQueenMoves(vector<int> &moves, int pos, int newBoard[SQUARES_NUM])
     {
-        GetRookMoves(moves, pos);
-        GetBishopMoves(moves, pos);
+        GetRookMoves(moves, pos, newBoard);
+        GetBishopMoves(moves, pos, newBoard);
     }
 
-    void GetKnightMoves(vector<int> &moves, int pos)
+    void GetKnightMoves(vector<int> &moves, int pos, int newBoard[SQUARES_NUM])
     {
         const int file = GetFileFromPos(pos);
         const int rank = GetRankFromPos(pos);
-        const int piece = board[rank * 8 + file];
+        const int piece = newBoard[rank * 8 + file];
 
         if (piece == 0)
             return;
@@ -250,7 +253,7 @@ public:
 
             if (newFile >= 0 && newFile < 8 && newRank >= 0 && newRank < 8)
             {
-                int square = board[newRank * 8 + newFile];
+                int square = newBoard[newRank * 8 + newFile];
 
                 if (square == 0 || GetPieceColor(square) != pieceColor)
                 {
@@ -260,11 +263,11 @@ public:
         }
     }
 
-    void GetKingMoves(vector<int> &moves, int pos, bool castleKingSide, bool castleQueenSide)
+    void GetKingMoves(vector<int> &moves, int pos, int newBoard[SQUARES_NUM], bool castleKingSide, bool castleQueenSide)
     {
         const int file = GetFileFromPos(pos);
         const int rank = GetRankFromPos(pos);
-        const int piece = board[rank * 8 + file];
+        const int piece = newBoard[rank * 8 + file];
 
         if (piece == 0)
             return;
@@ -281,7 +284,7 @@ public:
 
             if (newFile >= 0 && newFile < 8 && newRank >= 0 && newRank < 8)
             {
-                int square = board[newRank * 8 + newFile];
+                int square = newBoard[newRank * 8 + newFile];
 
                 if (square == 0 || GetPieceColor(square) != pieceColor)
                 {
@@ -292,7 +295,7 @@ public:
 
         if (castleKingSide)
         {
-            if (board[rank * 8 + 5] == 0 && board[rank * 8 + 6] == 0)
+            if (newBoard[rank * 8 + 5] == 0 && newBoard[rank * 8 + 6] == 0)
             {
                 moves.push_back(GetPos(6, rank));
             }
@@ -300,18 +303,18 @@ public:
 
         if (castleQueenSide)
         {
-            if (board[rank * 8 + 3] == 0 && board[rank * 8 + 2] == 0 && board[rank * 8 + 1] == 0)
+            if (newBoard[rank * 8 + 3] == 0 && newBoard[rank * 8 + 2] == 0 && board[rank * 8 + 1] == 0)
             {
                 moves.push_back(GetPos(2, rank));
             }
         }
     }
 
-    void GetPawnMoves(vector<int> &moves, int pos, int enPassantSquare)
+    void GetPawnMoves(vector<int> &moves, int pos, int newBoard[SQUARES_NUM], int enPassantSquare)
     {
         const int file = GetFileFromPos(pos);
         const int rank = GetRankFromPos(pos);
-        const int piece = board[rank * 8 + file];
+        const int piece = newBoard[rank * 8 + file];
 
         if (piece == 0)
             return;
@@ -328,27 +331,28 @@ public:
 
         // double push
 
-        if (board[(rank + 1 * multiplier) * 8 + file] == 0 && board[(rank + 2 * multiplier) * 8 + file] == 0)
+        if (newBoard[(rank + 1 * multiplier) * 8 + file] == 0 && newBoard[(rank + 2 * multiplier) * 8 + file] == 0)
         {
             moves.push_back(GetPos(file, rank + 2 * multiplier));
             moves.push_back(GetPos(file, rank + 1 * multiplier));
         }
-        else if (board[(rank + 1 * multiplier) * 8 + file] == 0)
+        else if (newBoard[(rank + 1 * multiplier) * 8 + file] == 0)
         {
             moves.push_back(GetPos(file, rank + 1 * multiplier));
         }
     }
 
-    bool inCheck()
+    bool inCheck(int newBoard[64], int ignore)
     {
+        if (ignore) newBoard = board;
         for (int x = 0; x < SQUARES_NUM; x++)
         {
-            int piece = board[x];
+            int position = GetPosFromIdx(x);
+            int piece = newBoard[x];
             if (piece != 0 && GetPieceColor(piece) != Turn)
             {
                 vector<int> moves;
-                GetLegalMoves(moves, GetPosFromIdx(x));
-
+                GetLegalMoves(moves, position, newBoard, ignore);
                 int kingPos = Turn ? KingPosW : KingPosB;
                 if (find(moves.begin(), moves.end(), kingPos) != moves.end())
                 {
@@ -361,56 +365,79 @@ public:
 
     int makeMove(int from, int to)
     {
+
+
         int fromFile = GetFileFromPos(from);
         int fromRank = GetRankFromPos(from);
         int toFile = GetFileFromPos(to);
         int toRank = GetRankFromPos(to);
 
         int square = board[fromRank * 8 + fromFile];
+        int pieceColor = GetPieceColor(square);
 
-        if (square == 0)
+        if (square == 0 || pieceColor%2!=Turn%2)
             return -1;
 
         int movedPieceType = GetPieceType(square);
+        vector<int> moves;
+        GetLegalMoves(moves, GetPos(fromFile, fromRank), {}, 1);
 
-        // check if move is legal
+        for (int move : moves) {
+            int newBoard[SQUARES_NUM];
+            copy(begin(board), end(board), begin(newBoard));
 
-        board[toRank * 8 + toFile] = board[fromRank * 8 + fromFile];
-        board[fromRank * 8 + fromFile] = 0;
+            int moveFile = GetFileFromPos(move);
+            int moveRank = GetRankFromPos(move);
+
+            newBoard[moveRank * 8 + moveFile] = newBoard[fromRank * 8 + fromFile];
+            newBoard[fromRank * 8 + fromFile] = 0;
+
+
+            int res = inCheck(newBoard, 0);
+            if (res) return -1;
+        }
+
+
+        
+            board[toRank * 8 + toFile] = board[fromRank * 8 + fromFile];
+            board[fromRank * 8 + fromFile] = 0;
+        
 
         return 0;
     }
 
-    void GetLegalMoves(vector<int> &moves, int pos)
+    void GetLegalMoves(vector<int> &moves, int pos, int newBoard[64], int ignore)
     {
-        int piece = board[GetRankFromPos(pos) * 8 + GetFileFromPos(pos)];
+        if (ignore) newBoard=board;
+
+        int piece = newBoard[GetRankFromPos(pos) * 8 + GetFileFromPos(pos)];
         int pieceType = GetPieceType(piece);
         int pieceColor = GetPieceColor(piece);
 
         switch (pieceType)
         {
         case 1:
-            GetKingMoves(moves, pos, pieceColor ? KingSideCastleW : KingSideCastleB, pieceColor ? QueenSideCastleW : QueenSideCastleB);
+            GetKingMoves(moves, pos, newBoard, pieceColor ? KingSideCastleW : KingSideCastleB, pieceColor ? QueenSideCastleW : QueenSideCastleB);
             break;
 
         case 2:
-            GetPawnMoves(moves, pos, -1);
+            GetPawnMoves(moves, pos, newBoard, -1);
             break;
 
         case 3:
-            GetKnightMoves(moves, pos);
+            GetKnightMoves(moves, pos, newBoard);
             break;
 
         case 4:
-            GetBishopMoves(moves, pos);
+            GetBishopMoves(moves, pos, newBoard);
             break;
 
         case 5:
-            GetRookMoves(moves, pos);
+            GetRookMoves(moves, pos, newBoard);
             break;
 
         case 6:
-            GetQueenMoves(moves, pos);
+            GetQueenMoves(moves, pos, newBoard);
             break;
         default:
             break;
@@ -419,7 +446,7 @@ public:
 
     int GetPieceType(int value)
     {
-        return (value / 10);
+        return (int)(value / 10);
     }
 
     int GetPieceColor(int value)
@@ -445,13 +472,45 @@ public:
     };
 };
 
+int convertNotation(str move) {
+        std::map<char, int>
+        notationMap = {
+            {'a', 0},
+            {'b', 1},
+            {'c', 2},
+            {'d', 3},
+            {'e', 4},
+            {'f', 5},
+            {'g', 6},
+            {'h', 7}};
+
+        int fromFile = notationMap[move[0]];
+        int fromRank = (int)move[1]-48-1;
+
+        int toFile = notationMap[move[2]];
+        int toRank = (int)move[3]-48-1;
+
+        return fromFile*1000+fromRank*100+toFile*10+toRank;
+}
+
 int main()
 {
 
-    str fen = "r1bqk1nr/pppp1ppp/2n5/4p3/1b1PP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 1 4";
+    str CheckFen = "r1bqk1nr/pppp1ppp/2n5/4p3/1b1PP3/5N2/PPP2PPP/RNBQKB1R w KQkq - 1 4";
+    str fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPP/RNBQKBNR w KQkq - 1 4";
 
     Board board(fen);
-    cout << board.inCheck();
+    board.DisplayBoard(())
+    int result = board.makeMove(21, 22);
+
+    if (result==-1) {
+
+
+        cout << "Invalid Move" << endl;
+    } else {
+        cout << "Move Made" << endl;
+        board.DisplayBoard({}, 1);
+    }
 
     return 0;
 }
