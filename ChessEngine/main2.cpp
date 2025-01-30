@@ -243,7 +243,7 @@ public:
 
         const int pieceColor = GetPieceColor(piece);
 
-        const int dx[] = {1, -1, 1, -1, 2, 2, -2, -2};
+        const int dx[] = {-1, 1, -1, 1, 2, 2, -2, -2};
         const int dy[] = {2, 2, -2, -2, 1, -1, 1, -1};
 
         for (int dir = 0; dir < 8; dir++)
@@ -320,7 +320,7 @@ public:
             return;
 
         const int pieceColor = GetPieceColor(piece);
-        const int multiplier = pieceColor ? 1 : 0;
+        const int multiplier = pieceColor ? 1 : -1;
 
         const int dx[] = {0, 0, 1, -1};
         const int dy[] = {2, 1, 1, 1};
@@ -331,14 +331,14 @@ public:
 
         // double push
 
+        if (newBoard[(rank + 1 * multiplier) * 8 + file] == 0)
+        {
+            moves.push_back(GetPos(file, rank + 1 * multiplier));
+        }
         if (newBoard[(rank + 1 * multiplier) * 8 + file] == 0 && newBoard[(rank + 2 * multiplier) * 8 + file] == 0)
         {
             moves.push_back(GetPos(file, rank + 2 * multiplier));
-            moves.push_back(GetPos(file, rank + 1 * multiplier));
-        }
-        else if (newBoard[(rank + 1 * multiplier) * 8 + file] == 0)
-        {
-            moves.push_back(GetPos(file, rank + 1 * multiplier));
+            //moves.push_back(GetPos(file, rank + 1 * multiplier));
         }
     }
 
@@ -402,6 +402,7 @@ public:
             board[toRank * 8 + toFile] = board[fromRank * 8 + fromFile];
             board[fromRank * 8 + fromFile] = 0;
         
+        Turn++;
 
         return 0;
     }
@@ -479,23 +480,35 @@ public:
         int numPositions=0;
         int idx=0;
         for (int square : board) {
-            if (square && GetPieceColor(square)%2 != Turn%2) {
+            if (square && GetPieceColor(square)%2 == Turn%2) {
                 vector<int> moves;
                 GetLegalMoves(moves, GetPosFromIdx(idx), {}, 1);
                 for (int move : moves) {
+                    int moveCount=0;
                     int newBoard[SQUARES_NUM];
                     copy(begin(board), end(board), begin(newBoard));
 
-                    makeMove(GetFileFromPos(move), GetRankFromPos(move));
-                    Turn++;
-                    cout << move << endl;
+                    int moveResult = makeMove(GetPosFromIdx(idx), GetFileFromPos(move)*10+GetRankFromPos(move));
+
+                    //cout <<  moveResult << "--" << idx << endl;
+
+                    if (moveResult == -1) continue;
+
+
+                    //  DisplayBoard({},1);
+                    //cout << move << endl;
+                    moveCount = numPositions;
                     numPositions += possiblePositions(depth-1);
                     copy(begin(newBoard), end(newBoard), begin(board));
+                    Turn++;
+
+                    //if (depth ==3 && idx==6) cout << move << " -- " << numPositions-moveCount << endl;
+                    
                 }
             }
             idx++;
         }
-        cout << "--------------------------------" << endl;
+        //cout << "--------------------------------" << endl;
         return numPositions;
 
     }
@@ -534,7 +547,13 @@ int main()
     board.DisplayBoard({}, 1);
     
 
-    cout << board.possiblePositions(2);
+    cout << board.possiblePositions(1) << endl;
+    cout << board.possiblePositions(2) << endl;
+    cout << board.possiblePositions(3) << endl;
+    cout << board.possiblePositions(4) << endl;
+    cout << board.possiblePositions(5) << endl;
+
+    vector<int> moves;
 
     return 0;
 }
